@@ -20,6 +20,7 @@ local HTTPS = "https"
 local _M = {}
 
 local function parse_url(host_url)
+  print("plugin called")
   local parsed_url = url.parse(host_url)
   if not parsed_url.port then
     if parsed_url.scheme == HTTP then
@@ -35,6 +36,7 @@ local function parse_url(host_url)
 end
 
 function _M.execute(conf)
+  print("ececute fn in plugin called")
   if not conf.run_on_preflight and get_method() == "OPTIONS" then
     return
   end
