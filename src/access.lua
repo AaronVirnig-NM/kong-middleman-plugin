@@ -20,9 +20,7 @@ local HTTPS = "https"
 local _M = {}
 
 local function parse_url(host_url)
-  print("Middleman plugin called, in function parse_url")
   local parsed_url = url.parse(host_url)
-  print("Middleman parsed_url is " .. parsed_url)
   if not parsed_url.port then
     if parsed_url.scheme == HTTP then
       parsed_url.port = 80
@@ -37,7 +35,6 @@ local function parse_url(host_url)
 end
 
 function _M.execute(conf)
-  print("Middleman execute fn in plugin called")
   if not conf.run_on_preflight and get_method() == "OPTIONS" then
     return
   end
@@ -78,7 +75,6 @@ function _M.execute(conf)
   end
 
   local status_code = tonumber(string.match(line, "%s(%d%d%d)%s"))
-  print("Middleman status_code is " .. status_code)
   local headers = {}
 
   repeat
@@ -113,7 +109,6 @@ function _M.execute(conf)
     end
 
     local response_body
-    print("Middleman response_body is " .. response_body)
     if conf.response == "table" then 
       response_body = JSON:decode(string.match(body, "%b{}"))
     else
@@ -126,7 +121,6 @@ function _M.execute(conf)
 end
 
 function _M.compose_payload(parsed_url)
-  print("Middleman in function compose_payload")
     local headers = get_headers()
     local uri_args = get_uri_args()
     local next = next
@@ -143,7 +137,6 @@ function _M.compose_payload(parsed_url)
     else
       url = parsed_url.path
     end
-  print("Middleman url is " .. url)
     
     local raw_json_headers = JSON:encode(headers)
     local raw_json_body_data = JSON:encode(body_data)
@@ -158,11 +151,12 @@ function _M.compose_payload(parsed_url)
     end
 
     local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
-    print("Middleman payload_body is " .. payload_body)
+    
+    local http_method = conf.http_method
     local payload_headers = string_format(
-      "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Keep-Alive\r\n",
-      url, parsed_url.host)
-  print("Middleman payload_headers is " .. payload_headers)
+      "%s %s HTTP/1.1\r\nHost: %s\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
+      http_method, url, parsed_url.host, #payload_body)
+  
     return string_format("%s\r\n%s", payload_headers, payload_body)
 end
 
