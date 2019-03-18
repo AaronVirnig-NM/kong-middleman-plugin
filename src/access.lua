@@ -20,17 +20,22 @@ local HTTPS = "https"
 local _M = {}
 
 local function parse_url(host_url)
+  print("parse_url function")
   local parsed_url = url.parse(host_url)
   if not parsed_url.port then
+    print("parsed_url.port not present")
     if parsed_url.scheme == HTTP then
       parsed_url.port = 80
+      print("parsed_url.port set to 80")
      elseif parsed_url.scheme == HTTPS then
       parsed_url.port = 443
+      print("parsed_url.port set to 443")
      end
   end
   if not parsed_url.path then
     parsed_url.path = "/"
   end
+  print("parsed_url is " .. parsed_url)
   return parsed_url
 end
 
@@ -49,12 +54,14 @@ function _M.execute(conf)
   local sock = ngx.socket.tcp()
   sock:settimeout(conf.timeout)
 
+  print("call sock connect")
   ok, err = sock:connect(host, port)
   if not ok then
     ngx.log(ngx.ERR, name .. "failed to connect to " .. host .. ":" .. tostring(port) .. ": ", err)
     return
   end
 
+  print("call sock sslhandshake")
   if parsed_url.scheme == HTTPS then
     local _, err = sock:sslhandshake(true, host, false)
     if err then
@@ -62,11 +69,13 @@ function _M.execute(conf)
     end
   end
 
+  print("call sock send payload")
   ok, err = sock:send(payload)
   if not ok then
     ngx.log(ngx.ERR, name .. "failed to send data to " .. host .. ":" .. tostring(port) .. ": ", err)
   end
 
+  print("receive all lines")
   local line, err = sock:receive("*l")
 
   if err then 
@@ -134,6 +143,7 @@ function _M.compose_payload(parsed_url)
     local url
     if parsed_url.query then
       url = parsed_url.path .. "?" .. parsed_url.query
+      print("parsed_url.query present " .. url)
     else
       url = parsed_url.path
     end
@@ -151,10 +161,12 @@ function _M.compose_payload(parsed_url)
     end
 
     local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
-    
+    print("payload_body below")
+    print(payload_body)
     local payload_headers = string_format(
       "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
       url, parsed_url.host, #payload_body)
+    print(payload_headers)
     print(string_format("%s\r\n%s", payload_headers, payload_body)) 
     return string_format("%s\r\n%s", payload_headers, payload_body)
 end
