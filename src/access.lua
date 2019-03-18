@@ -20,7 +20,6 @@ local HTTPS = "https"
 local _M = {}
 
 local function parse_url(host_url)
-print("MIDDLEMAN::In parse_url")
   local parsed_url = url.parse(host_url)
   if not parsed_url.port then
     if parsed_url.scheme == HTTP then
@@ -36,7 +35,6 @@ print("MIDDLEMAN::In parse_url")
 end
 
 function _M.execute(conf)
-print("MIDDLEMAN::In _M.execute")
   if not conf.run_on_preflight and get_method() == "OPTIONS" then
     return
   end
@@ -71,7 +69,7 @@ print("MIDDLEMAN::In _M.execute")
 
   local line, err = sock:receive("*l")
 
-  if err then
+  if err then 
     ngx.log(ngx.ERR, name .. "failed to read response status from " .. host .. ":" .. tostring(port) .. ": ", err)
     return
   end
@@ -106,12 +104,12 @@ print("MIDDLEMAN::In _M.execute")
   end
 
   if status_code > 299 then
-    if err then
+    if err then 
       ngx.log(ngx.ERR, name .. "failed to read response from " .. host .. ":" .. tostring(port) .. ": ", err)
     end
 
     local response_body
-    if conf.response == "table" then
+    if conf.response == "table" then 
       response_body = JSON:decode(string.match(body, "%b{}"))
     else
       response_body = string.match(body, "%b{}")
@@ -123,11 +121,10 @@ print("MIDDLEMAN::In _M.execute")
 end
 
 function _M.compose_payload(parsed_url)
-print("MIDDLEMAN::In _M.compose_payload")
     local headers = get_headers()
     local uri_args = get_uri_args()
     local next = next
-
+    
     read_body()
     local body_data = get_body()
 
@@ -140,13 +137,13 @@ print("MIDDLEMAN::In _M.compose_payload")
     else
       url = parsed_url.path
     end
-
+    
     local raw_json_headers = JSON:encode(headers)
     local raw_json_body_data = JSON:encode(body_data)
 
     local raw_json_uri_args
-    if next(uri_args) then
-      raw_json_uri_args = JSON:encode(uri_args)
+    if next(uri_args) then 
+      raw_json_uri_args = JSON:encode(uri_args) 
     else
       -- Empty Lua table gets encoded into an empty array whereas a non-empty one is encoded to JSON object.
       -- Set an empty object for the consistency.
@@ -154,11 +151,11 @@ print("MIDDLEMAN::In _M.compose_payload")
     end
 
     local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
-
+    
     local payload_headers = string_format(
       "GET %s HTTP/1.1\r\nHost: %s\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
       url, parsed_url.host, #payload_body)
-
+  
     return string_format("%s\r\n%s", payload_headers, payload_body)
 end
 
