@@ -36,7 +36,6 @@ local function parse_url(host_url)
     print("no parsed_url.path")
     parsed_url.path = "/"
   end
-  print("parsed_url:",parsed_url)
   return parsed_url
 end
 
