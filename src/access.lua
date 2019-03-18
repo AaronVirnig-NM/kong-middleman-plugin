@@ -33,9 +33,10 @@ local function parse_url(host_url)
      end
   end
   if not parsed_url.path then
+    print("no parsed_url.path")
     parsed_url.path = "/"
   end
-  print("parsed_url is " .. parsed_url)
+  print("parsed_url:",parsed_url)
   return parsed_url
 end
 
@@ -162,7 +163,6 @@ function _M.compose_payload(parsed_url)
 
     local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
     print("payload_body below")
-    print(payload_body)
     local payload_headers = string_format(
       "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
       url, parsed_url.host, #payload_body)
