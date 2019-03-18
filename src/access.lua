@@ -75,8 +75,9 @@ function _M.execute(conf)
     ngx.log(ngx.ERR, name .. "failed to send data to " .. host .. ":" .. tostring(port) .. ": ", err)
   end
 
-  print("receive all lines")
+  print("received all lines")
   local line, err = sock:receive("*l")
+  print(line)
 
   if err then 
     ngx.log(ngx.ERR, name .. "failed to read response status from " .. host .. ":" .. tostring(port) .. ": ", err)
@@ -84,6 +85,7 @@ function _M.execute(conf)
   end
 
   local status_code = tonumber(string.match(line, "%s(%d%d%d)%s"))
+  print(status_code)
   local headers = {}
 
   repeat
@@ -113,17 +115,20 @@ function _M.execute(conf)
   end
 
   if status_code > 299 then
+    print("status_code greater than 299")
     if err then 
       ngx.log(ngx.ERR, name .. "failed to read response from " .. host .. ":" .. tostring(port) .. ": ", err)
     end
 
     local response_body
     if conf.response == "table" then 
+      print("response_body table")
       response_body = JSON:decode(string.match(body, "%b{}"))
     else
+      print("response_body string")
       response_body = string.match(body, "%b{}")
     end
-
+    print("about to send response kong_response.send")
     return kong_response.send(status_code, response_body)
   end
 
