@@ -152,7 +152,7 @@ function _M.compose_payload(parsed_url)
     headers["target_method"] = ngx.var.request_method
   
   print("ngx.var.request_method is " .. ngx.var.request_method)
-  print("token is " .. headers.Authorization)
+  print("token is " .. headers)
 
     local url
     if parsed_url.query then
