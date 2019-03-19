@@ -92,6 +92,7 @@ function _M.execute(conf)
   local headers = {}
 
   repeat
+    print("in repeat block")
     line, err = sock:receive("*l")
     if err then
       ngx.log(ngx.ERR, name .. "failed to read header " .. host .. ":" .. tostring(port) .. ": ", err)
@@ -152,9 +153,10 @@ function _M.compose_payload(parsed_url)
 
     local url
     if parsed_url.query then
+    print("url has query params")
       url = parsed_url.path .. "?" .. parsed_url.query
-      print("parsed_url.query present " .. url)
     else
+    print("no query params")
       url = parsed_url.path
     end
     
@@ -162,22 +164,25 @@ function _M.compose_payload(parsed_url)
     local raw_json_body_data = JSON:encode(body_data)
 
     local raw_json_uri_args
-    if next(uri_args) then 
+    if next(uri_args) then
+    print("setting raw json uri args")
       raw_json_uri_args = JSON:encode(uri_args) 
     else
+    print("setting empty object")
       -- Empty Lua table gets encoded into an empty array whereas a non-empty one is encoded to JSON object.
       -- Set an empty object for the consistency.
       raw_json_uri_args = "{}"
     end
 
-    -- local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
-    -- print("payload_body below")
+    local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
+    
     local payload_headers = string_format(
-      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\n",
-      url, parsed_url.host)
-    print(payload_headers)
-    -- print(string_format("%s\r\n%s", payload_headers, payload_body)) 
-    return string_format("%s", payload_headers)
+      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
+      url, parsed_url.host, #payload_body)
+    print("Printing payload header and body below")
+    print(string_format("%s\r\n%s", payload_headers, payload_body))
+  
+    return string_format("%s\r\n%s", payload_headers, payload_body)
 end
 
 return _M
