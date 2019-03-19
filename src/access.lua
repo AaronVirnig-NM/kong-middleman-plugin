@@ -55,6 +55,8 @@ function _M.execute(conf)
   sock:settimeout(conf.timeout)
 
   print("call sock connect")
+  print("host is " .. host)
+  print("port is " .. port)
   ok, err = sock:connect(host, port)
   if not ok then
     ngx.log(ngx.ERR, name .. "failed to connect to " .. host .. ":" .. tostring(port) .. ": ", err)
@@ -72,6 +74,7 @@ function _M.execute(conf)
   print("call sock send payload")
   ok, err = sock:send(payload)
   if not ok then
+    print("send payload failed")
     ngx.log(ngx.ERR, name .. "failed to send data to " .. host .. ":" .. tostring(port) .. ": ", err)
   end
 
@@ -85,7 +88,7 @@ function _M.execute(conf)
   end
 
   local status_code = tonumber(string.match(line, "%s(%d%d%d)%s"))
-  print(status_code)
+  print("status code is " .. status_code)
   local headers = {}
 
   repeat
@@ -103,11 +106,13 @@ function _M.execute(conf)
   until ngx_re_find(line, "^\\s*$", "jo")
 
   local body, err = sock:receive(tonumber(headers['content-length']))
+  print("content-length converted in sock receive")
   if err then
     ngx.log(ngx.ERR, name .. "failed to read body " .. host .. ":" .. tostring(port) .. ": ", err)
     return
   end
 
+  print("sock keepalive")
   ok, err = sock:setkeepalive(conf.keepalive)
   if not ok then
     ngx.log(ngx.ERR, name .. "failed to keepalive to " .. host .. ":" .. tostring(port) .. ": ", err)
@@ -165,14 +170,14 @@ function _M.compose_payload(parsed_url)
       raw_json_uri_args = "{}"
     end
 
-    local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
-    print("payload_body below")
+    -- local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
+    -- print("payload_body below")
     local payload_headers = string_format(
-      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\n",
-      url, parsed_url.host, #payload_body)
+      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\n",
+      url, parsed_url.host)
     print(payload_headers)
-    print(string_format("%s\r\n%s", payload_headers, payload_body)) 
-    return string_format("%s\r\n%s", payload_headers, payload_body)
+    -- print(string_format("%s\r\n%s", payload_headers, payload_body)) 
+    return string_format("%s", payload_headers)
 end
 
 return _M
