@@ -153,6 +153,7 @@ function _M.compose_payload(parsed_url)
   
   print("ngx.var.request_method is " .. ngx.var.request_method)
   print("token is " .. headers["Authorization"])
+  token = headers["Authorization"]
 
     local url
     if parsed_url.query then
@@ -180,8 +181,8 @@ function _M.compose_payload(parsed_url)
     local payload_body = [[{"headers":]] .. raw_json_headers .. [[,"uri_args":]] .. raw_json_uri_args.. [[,"body_data":]] .. raw_json_body_data .. [[}]]
     
     local payload_headers = string_format(
-      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\nAuthorization: headers["Authorization"]\r\n",
-      url, parsed_url.host, #payload_body)
+      "GET %s HTTP/1.1\r\nHost: %s:31662\r\nConnection: Keep-Alive\r\nContent-Type: application/json\r\nContent-Length: %s\r\nAuthorization: %s\r\n",
+      url, parsed_url.host, #payload_body, token)
     print("Printing payload header and body below")
     print(string_format("%s\r\n%s", payload_headers, payload_body))
   
