@@ -88,7 +88,7 @@ function _M.execute(conf)
   end
 
   local status_code = tonumber(string.match(line, "%s(%d%d%d)%s"))
-  print("status code is " .. status_code)
+  print("The status code is " .. status_code)
   local headers = {}
 
   repeat
