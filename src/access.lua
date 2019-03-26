@@ -136,7 +136,7 @@ function _M.execute(conf)
     end
     print("about to send response kong_response.send")
     print("status_code = ", status_code)
-    print("response_body = ", response_body)
+    --print("response_body = ", response_body)
     --return kong_response.send(status_code, response_body)
     return kong_response.exit(status_code, response_body)
   end
