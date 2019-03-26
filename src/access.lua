@@ -127,13 +127,13 @@ function _M.execute(conf)
     end
 
     local response_body
-    if conf.response == "table" then 
-      print("response_body table")
-      response_body = JSON:decode(string.match(body, "%b{}"))
-    else
+    --if conf.response == "table" then 
+    --  print("response_body table")
+    --  response_body = JSON:decode(string.match(body, "%b{}"))
+    --else
       print("response_body string")
       response_body = string.match(body, "%b{}")
-    end
+    --end
     print("about to send response kong_response.send")
     print("status_code = ", status_code)
     print("response_body = ", response_body)
