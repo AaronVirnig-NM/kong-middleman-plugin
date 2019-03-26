@@ -135,6 +135,7 @@ function _M.execute(conf)
       response_body = string.match(body, "%b{}")
     end
     print("about to send response kong_response.send")
+    print("testing 1, 2, 3")
     return kong_response.send(status_code, response_body)
   end
 
